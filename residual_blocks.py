@@ -82,7 +82,7 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
 	
 	# add conv layers...
 	for i in range(n_skip-1):
-		if i == 0 and is_subsample:
+		if i == 0:
 			# taking care of subsampling
 			# as 'valid' 3x3 conv reduces the size but valid1x1 (for shortcut) doesn't
 			# zero should be padded here.
@@ -101,12 +101,13 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
 									input_shape=input_shape) #'OPTION'
 			block.add_node(layer, name=layer_name, input=prev_output)
 			prev_output = layer_name
-			#     MP
-			layer_name = '%s_MP_%d' % (name_prefix, i)
-			block.add_node(MaxPooling2D(pool_size=subsample),
-							name=layer_name,
-							input=prev_output)
-			prev_output = layer_name
+			if is_subsample:
+				#     MP
+				layer_name = '%s_MP_%d' % (name_prefix, i)
+				block.add_node(MaxPooling2D(pool_size=subsample),
+								name=layer_name,
+								input=prev_output)
+				prev_output = layer_name
 
 		else:
 			layer_name = '%s_conv_%d' % (name_prefix, i)
