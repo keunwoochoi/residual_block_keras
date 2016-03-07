@@ -101,14 +101,7 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
 									input_shape=input_shape) #'OPTION'
 			block.add_node(layer, name=layer_name, input=prev_output)
 			prev_output = layer_name
-			if is_subsample:
-				#     MP
-				layer_name = '%s_MP_%d' % (name_prefix, i)
-				block.add_node(MaxPooling2D(pool_size=subsample),
-								name=layer_name,
-								input=prev_output)
-				prev_output = layer_name
-
+			
 		else:
 			layer_name = '%s_conv_%d' % (name_prefix, i)
 			layer = Convolution2D(n_feature_maps, kernel_row, kernel_col, border_mode='same')	
@@ -124,7 +117,16 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
 		layer_name = '%s_relu_%d' % (name_prefix, i)
 		block.add_node(Activation('relu'), name=layer_name, input=prev_output)
 		prev_output = layer_name
-	# the final layers
+
+		if i==0 and is_subsample:
+			#     MP
+			layer_name = '%s_MP_%d' % (name_prefix, i)
+			block.add_node(MaxPooling2D(pool_size=subsample),
+							name=layer_name,
+							input=prev_output)
+			prev_output = layer_name
+
+	# the final layers - this is separately written due to the different inputs of relu.
 	i += 1
 
 	layer_name = '%s_conv_%d' % (name_prefix, i)
