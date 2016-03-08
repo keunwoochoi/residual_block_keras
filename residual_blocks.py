@@ -55,30 +55,25 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
 
     is_expand_channels = not (input_shape[0] == n_feature_maps) # including the first layer and every subsamples
     # more setting on the short-cut
-    if is_subsample or is_expand_channels:
-        shortcut_conv_name = '%s_shortcut_conv'
-        if is_subsample: # to expand the number of channel from 1 to n_feature_maps
-            print '      - Input channels: %d ---> num feature maps on out: %d' % (input_shape[0], n_feature_maps)  
-            print '        with subsample:', subsample
-            block.add_node(Convolution2D(n_feature_maps, (kernel_row-1)/2, (kernel_col-1)/2,
-                                        border_mode='same'), 
-                            name=shortcut_conv_name,
-                            input=shortcut_output)
-            shortcut_output = shortcut_conv_name
-            
-            this_node_name = '%s_shortcut_MP' % name_prefix
-            block.add_node(MaxPooling2D(pool_size=subsample),
-                            name=this_node_name,
-                            input=shortcut_output)
-            shortcut_output = this_node_name
+    if is_expand_channels:
+        print '      - Input channels: %d ---> num feature maps on out: %d' % (input_shape[0], n_feature_maps)  
+    if is_subsample:
+        print '      - with subsample:', subsample
 
-
-        elif is_expand_channels:
-            block.add_node(Convolution2D(n_feature_maps, 1, 1,
-                                        border_mode='same'),
-                            name=shortcut_conv_name,
-                            input=shortcut_output)
-            shortcut_output = shortcut_conv_name
+    if is_subsample: # probably subsample first? not sure yet.
+        this_node_name = '%s_shortcut_MP' % name_prefix 
+        block.add_node(MaxPooling2D(pool_size=subsample),
+                        name=this_node_name,
+                        input=shortcut_output)
+        shortcut_output = this_node_name
+    
+    if is_expand_channels:
+        this_node_name = '%s_shortcut_conv' % name_prefix
+        block.add_node(Convolution2D(n_feature_maps, 1, 1,
+                                    border_mode='same'), # is input_shape necessary in this case?
+                        name=this_node_name,
+                        input=shortcut_output)
+        shortcut_output = this_node_name
     
     # add conv layers...
     for i in range(n_skip-1):
@@ -109,9 +104,7 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
             prev_output = layer_name
             
         layer_name = '%s_BN_%d' % (name_prefix, i)
-        
         block.add_node(BatchNormalization(axis=1), name=layer_name, input=prev_output)
-        
         prev_output = layer_name
 
         layer_name = '%s_relu_%d' % (name_prefix, i)
@@ -148,7 +141,6 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
                     name=layer_name, 
                     inputs=[prev_output, shortcut_output],
                     merge_mode='sum')
-
     prev_output = layer_name
 
     # output
