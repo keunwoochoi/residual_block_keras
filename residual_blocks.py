@@ -2,7 +2,7 @@
 import keras
 from keras.layers.containers import Sequential, Graph
 from keras.layers.core import Layer, Activation
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, AveragePooling2D
 from keras.layers.normalization import BatchNormalization
 
 
@@ -61,8 +61,8 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
         print '      - with subsample:', subsample
 
     if is_subsample: # probably subsample first? not sure yet.
-        this_node_name = '%s_shortcut_MP' % name_prefix 
-        block.add_node(MaxPooling2D(pool_size=subsample),
+        this_node_name = '%s_shortcut_AP' % name_prefix 
+        block.add_node(AveragePooling2D(pool_size=subsample),
                         name=this_node_name,
                         input=shortcut_output)
         shortcut_output = this_node_name
