@@ -92,8 +92,8 @@ def design_for_residual_blocks():
                                                             ))
         last_node_name = this_node_name
 
-        height_input /= pool_sizes[conv_idx][0]
-        width_input  /= pool_sizes[conv_idx][1]
+        height_input = int(height_input/pool_sizes[conv_idx][0])
+        width_input  = int(width_input/pool_sizes[conv_idx][1])
         num_channel_input = n_feat_next
 
     # Add average pooling at the end: (4,4) --> (1,1)
