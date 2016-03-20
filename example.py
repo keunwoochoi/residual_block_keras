@@ -31,6 +31,7 @@ from keras.models import Sequential, Graph
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import ZeroPadding2D, AveragePooling2D
 from keras.utils import np_utils
+from keras.callbacks import ModelCheckpoint
 
 import residual_blocks
 
@@ -148,8 +149,12 @@ if __name__ =='__main__':
 
     model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 
+    # autosave best Model
+    fBestModel = "./my_model_weights.h5"
+    best_model = ModelCheckpoint(fBestModel, verbose=1, save_best_only=True)
+
     model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
-              show_accuracy=True, verbose=1, validation_data=(X_test, Y_test))
+              show_accuracy=True, verbose=1, validation_data=(X_test, Y_test), callbacks=[best_model])
     score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0)
     print('Test score:', score[0])
     print('Test accuracy:', score[1])
