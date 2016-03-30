@@ -8,7 +8,7 @@
 This implementation is based on [Keras](https://github.com/fchollet/keras).
 
 ### MNIST example
-You can easily run an example code in `example.py`. It load MNIST dataset and
+You can easily run an example code in [`example.py`](https://github.com/keunwoochoi/residual_block_keras/blob/master/example.py). It load MNIST dataset and
  * zeropadding `(2,2)` to convert the size `(28,28)` to `(32,32)`
  * add residual blocks
  * add average pooling at the end (aka fully convolutional, though it is not 100% - the output of average pooling is `(n_feature, 1, 1)`, then the final output layer is also a fully connected layer. 
