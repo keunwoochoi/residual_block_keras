@@ -1,13 +1,14 @@
 # Residual block in Keras
 
-## Original article
-[Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385) (the 2015 ImageNet competition winner)
-[Identity Mappings in Deep Residual Networks](http://arxiv.org/abs/1603.05027) (an update).
+### Original article
+ * [Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385) (the 2015 ImageNet competition winner)
 
-## Keras
+ * [Identity Mappings in Deep Residual Networks](http://arxiv.org/abs/1603.05027) (an update).
+
+### Keras
 [Keras](https://github.com/fchollet/keras)
 
-## MNIST example
+### MNIST example
 You can easily run an example code in `example.py`. It load MNIST dataset and
  * zeropadding `(2,2)` to convert the size `(28,28)` to `(32,32)`
  * add residual blocks
