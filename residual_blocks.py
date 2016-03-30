@@ -1,4 +1,8 @@
-'''Residual block by Keunwoo Choi (keunwoo.choi@qmul.ac.uk)'''
+'''Residual block by Keunwoo Choi (keunwoo.choi@qmul.ac.uk)
+
+It is based on "Deep Residual Learning for Image Recognition" (http://arxiv.org/abs/1512.03385)
+and "Identity Mappings in Deep Residual Networks" (http://arxiv.org/abs/1603.05027).
+'''
 import keras
 from keras.layers.containers import Sequential, Graph
 from keras.layers.core import Layer, Activation
@@ -37,29 +41,34 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
     is_subsample : If it is True, the layers subsamples by *subsample* to reduce the size.
     subsample    : tuple, (2,2) or (1,2) for example. Used only if is_subsample==True
     '''
-
+    # ***** VERBOSE_PART ***** 
     print '    - Create residual building block named %s' % name_prefix
     print '      input shape:', input_shape
     print '      kernel size:', kernel_sizes
-    kernel_row, kernel_col = kernel_sizes
-
-    block = keras.layers.containers.Graph()
-    # set input shape
-    input_name = '%s_x' % name_prefix
-    block.add_input(input_name, input_shape=input_shape)
-    prev_output = input_name
-    # set short-cut
-    shortcut_output = '%s_identity'%name_prefix
-    block.add_node(Identity(input_shape=input_shape), name=shortcut_output, 
-                                input=prev_output)
-
-    is_expand_channels = not (input_shape[0] == n_feature_maps) # including the first layer and every subsamples
-    # more setting on the short-cut
+    # is_expand_channels == True when num_channels increases.
+    #    E.g. the very first residual block (e.g. 3->128)
+    #    E.g. usually when there's subsampling. 
+    is_expand_channels = not (input_shape[0] == n_feature_maps) 
+    
     if is_expand_channels:
         print '      - Input channels: %d ---> num feature maps on out: %d' % (input_shape[0], n_feature_maps)  
     if is_subsample:
         print '      - with subsample:', subsample
 
+    kernel_row, kernel_col = kernel_sizes
+
+    # ***** INITIATION ***** 
+    block = keras.layers.containers.Graph()
+    # set input shape
+    input_name = '%s_x' % name_prefix
+    block.add_input(input_name, input_shape=input_shape)
+    prev_output = input_name
+    
+    # ***** SHORT_CUT_PART ***** 
+    shortcut_output = '%s_identity'%name_prefix
+    block.add_node(Identity(input_shape=input_shape), name=shortcut_output, 
+                                input=prev_output)
+    
     if is_subsample: # probably subsample first? not sure yet.
         this_node_name = '%s_shortcut_AP' % name_prefix 
         block.add_node(AveragePooling2D(pool_size=subsample),
@@ -75,8 +84,9 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
                         input=shortcut_output)
         shortcut_output = this_node_name
     
-    # add conv layers...
-    for i in range(n_skip-1):
+    # ***** CONVOLUTION_PART ***** 
+    for i in range(n_skip):
+        # [BN]
         if i == 0:
             # taking care of subsampling
             # as 'valid' 3x3 conv reduces the size but valid1x1 (for shortcut) doesn't
@@ -90,27 +100,25 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
             #               input=prev_output)
             # prev_output = layer_name
             #     conv
-            layer_name = '%s_conv_%d' % (name_prefix, i)
-            layer = Convolution2D(n_feature_maps, kernel_row, kernel_col,
-                                    border_mode='same',
-                                    input_shape=input_shape) #'OPTION'
-            block.add_node(layer, name=layer_name, input=prev_output)
+            layer_name = '%s_BN_%d' % (name_prefix, i)
+            block.add_node(BatchNormalization(axis=1, input_shape=input_shape), 
+                            name=layer_name, 
+                            input=prev_output)
             prev_output = layer_name
-            
         else:
-            layer_name = '%s_conv_%d' % (name_prefix, i)
-            layer = Convolution2D(n_feature_maps, kernel_row, kernel_col, border_mode='same')   
-            block.add_node(layer, name=layer_name, input=prev_output)
-            prev_output = layer_name
-            
-        layer_name = '%s_BN_%d' % (name_prefix, i)
-        block.add_node(BatchNormalization(axis=1), name=layer_name, input=prev_output)
-        prev_output = layer_name
-
+            layer_name = '%s_BN_%d' % (name_prefix, i)
+            block.add_node(BatchNormalization(axis=1), name=layer_name, input=prev_output)
+            prev_output = layer_name    
+        # [ReLU]
         layer_name = '%s_relu_%d' % (name_prefix, i)
         block.add_node(Activation('relu'), name=layer_name, input=prev_output)
         prev_output = layer_name
-
+        # [Conv]
+        layer_name = '%s_conv_%d' % (name_prefix, i)
+        layer = Convolution2D(n_feature_maps, kernel_row, kernel_col, border_mode='same')   
+        block.add_node(layer, name=layer_name, input=prev_output)
+        prev_output = layer_name
+        # [Subsample]    
         if i==0 and is_subsample:
             #     MP
             layer_name = '%s_MP_%d' % (name_prefix, i)
@@ -119,34 +127,10 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
                             input=prev_output)
             prev_output = layer_name
 
-    # the final layers - this is separately written due to the different inputs of relu.
-    i += 1
-
-    layer_name = '%s_conv_%d' % (name_prefix, i)
-    layer = Convolution2D(n_feature_maps, kernel_row, kernel_col, border_mode='same')
-    block.add_node(layer, name=layer_name, input=prev_output)
-    prev_output = layer_name
-
-    layer_name = '%s_BN_%d' % (name_prefix, i)
-    block.add_node(BatchNormalization(axis=1), 
-                    name=layer_name, 
-                    input=prev_output)
-    prev_output = layer_name
-
-    # According to http://torch.ch/blog/2016/02/04/resnets.html,
-    # BN before merge is desired.
-
-    layer_name = '%s_relu_%d' % (name_prefix, i)
-    block.add_node(Activation('relu'),
-                    name=layer_name, 
-                    inputs=[prev_output, shortcut_output],
-                    merge_mode='sum')
-    prev_output = layer_name
-
     # output
     layer_name = '%s_output' % name_prefix
-    block.add_output(name=layer_name, input=prev_output)
+    block.add_output(name=layer_name, 
+                    inputs=[prev_output, shortcut_output],
+                    merge_mode='sum')
     
     return block
-
-
