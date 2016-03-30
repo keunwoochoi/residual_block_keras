@@ -1,7 +1,8 @@
 # Residual block in Keras
 
 ## Original article
-[Here](http://arxiv.org/abs/1512.03385) (the 2015 ImageNet competition winner)
+[Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385) (the 2015 ImageNet competition winner)
+[Identity Mappings in Deep Residual Networks](http://arxiv.org/abs/1603.05027) (an update).
 
 ## Keras
 [Keras](https://github.com/fchollet/keras)
