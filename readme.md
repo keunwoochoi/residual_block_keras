@@ -2,11 +2,10 @@
 
 ### Original article
  * [Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385) (the 2015 ImageNet competition winner)
-
  * [Identity Mappings in Deep Residual Networks](http://arxiv.org/abs/1603.05027) (an update).
 
 ### Keras
-[Keras](https://github.com/fchollet/keras)
+This implementation is based on [Keras](https://github.com/fchollet/keras).
 
 ### MNIST example
 You can easily run an example code in `example.py`. It load MNIST dataset and
