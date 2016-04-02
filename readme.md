@@ -1,5 +1,8 @@
 # Residual block in Keras
 
+### NOTICE
+The example.py doesn't seem to work properly, but it used to be working for other applications I tried. I'll update after investigating what's going on.
+
 ### The original articles
  * [Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385) (the 2015 ImageNet competition winner)
  * [Identity Mappings in Deep Residual Networks](http://arxiv.org/abs/1603.05027) (an update).
