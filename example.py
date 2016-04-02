@@ -170,7 +170,6 @@ if __name__ =='__main__':
     # convert class vectors to binary class matrices
     Y_train = np_utils.to_categorical(y_train, nb_classes)
     Y_test = np_utils.to_categorical(y_test, nb_classes)
-    pdb.set_trace()
     model = design_residual_model()
 
     model.compile(loss='categorical_crossentropy', optimizer='adam')
