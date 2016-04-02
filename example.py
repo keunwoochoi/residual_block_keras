@@ -40,6 +40,17 @@ nb_classes = 10
 nb_epoch = 12
 img_rows, img_cols = 28, 28
 
+def compute_padding_length(length_before, stride, length_conv):
+    ''' Assumption: you want the subsampled result has a length of floor(original_length/stride).
+    '''
+    N = length_before
+    F = length_conv
+    S = stride
+    if S == F:
+        return 0
+    if S == 1:
+        return (F-1)/2
+
 def design_for_residual_blocks():
     ''''''
     model = keras.layers.containers.Sequential() # it's a CONTAINER, not MODEL
@@ -79,7 +90,10 @@ def design_for_residual_blocks():
             last_node_name = this_node_name
         
         # the last residual block N-1
-        # the last one : subsamples and increase #channels
+        # the last one : pad zeros, subsamples, and increase #channels
+        this_node_name = 'zero_padding_%d' % conv_idx
+        model.add(ZeroPadding2D(padding=(1,1))) # only works when it is (3,3) conv with (2,2) stride. will update later.
+
         this_node_name = 'residual_block_%d_last' % conv_idx
         n_feat_next = n_features_next[conv_idx]
         name_prefix = 'Conv_%d_last' % conv_idx
