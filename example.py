@@ -97,7 +97,7 @@ def design_for_residual_blocks():
         num_channel_input = n_feat_next
 
     # Add average pooling at the end:
-    print 'Average pooling, from (%d,%d) to (1,1)' % (height_input, width_input)
+    print('Average pooling, from (%d,%d) to (1,1)' % (height_input, width_input))
     model.add(AveragePooling2D(pool_size=(height_input, width_input)))
 
     this_node_name = 'residual_block_output'
