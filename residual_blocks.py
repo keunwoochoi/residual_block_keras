@@ -14,7 +14,7 @@ class Identity(Layer):
     def get_output(self, train):
         return self.get_input(train)
 
-def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_sizes=None, n_skip=2, is_subsample=False, subsample=None, subsample_type):
+def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_sizes=None, n_skip=2, is_subsample=False, subsample=None):
     '''
     [1] Building block of layers for residual learning.
         Code based on https://github.com/ndronen/modeling/blob/master/modeling/residual.py
