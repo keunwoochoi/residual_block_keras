@@ -42,18 +42,18 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
     subsample    : tuple, (2,2) or (1,2) for example. Used only if is_subsample==True
     '''
     # ***** VERBOSE_PART ***** 
-    print '    - Create residual building block named %s' % name_prefix
-    print '      input shape:', input_shape
-    print '      kernel size:', kernel_sizes
+    print ('    - Create residual building block named %s' % name_prefix)
+    print ('      input shape:', input_shape)
+    print ('      kernel size:', kernel_sizes)
     # is_expand_channels == True when num_channels increases.
     #    E.g. the very first residual block (e.g. 3->128)
     #    E.g. usually when there's subsampling. 
     is_expand_channels = not (input_shape[0] == n_feature_maps) 
     
     if is_expand_channels:
-        print '      - Input channels: %d ---> num feature maps on out: %d' % (input_shape[0], n_feature_maps)  
+        print ('      - Input channels: %d ---> num feature maps on out: %d' % (input_shape[0], n_feature_maps)  )
     if is_subsample:
-        print '      - with subsample:', subsample
+        print ('      - with subsample:', subsample)
 
     kernel_row, kernel_col = kernel_sizes
 
@@ -64,7 +64,7 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
     block.add_input(input_name, input_shape=input_shape)
     prev_output = input_name
     
-    # ***** SHORT_CUT_PART ***** 
+    # ***** SHORT_CUT_PATH ***** 
     shortcut_output = '%s_identity' % name_prefix
     block.add_node(Identity(input_shape=input_shape), name=shortcut_output, 
                                 input=prev_output)    
@@ -86,7 +86,7 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
             # if no subsample and no channel expension, there's nothing to add on the shortcut.
             pass
     
-    # ***** CONVOLUTION_PART ***** 
+    # ***** CONVOLUTION_PATH ***** 
     for i in range(n_skip):
         # [BN]
         layer_name = '%s_BN_%d' % (name_prefix, i)
@@ -114,3 +114,4 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
                     merge_mode='sum')
 
     return block
+    
