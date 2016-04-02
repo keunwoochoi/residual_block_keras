@@ -177,6 +177,10 @@ if __name__ =='__main__':
     # autosave best Model
     fBestModel = "./my_model_weights.h5"
     best_model = ModelCheckpoint(fBestModel, verbose=1, save_best_only=True)
+    
+    from keras.utils.visualize_util import plot
+    plot(model, 'residual.png', show_shape=True)
+
 
     model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
               show_accuracy=True, verbose=1, validation_data=(X_test, Y_test), callbacks=[best_model])
