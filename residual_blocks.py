@@ -14,7 +14,7 @@ class Identity(Layer):
     def get_output(self, train):
         return self.get_input(train)
 
-def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_sizes=None, n_skip=2, is_subsample=False, subsample=None):
+def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_sizes=None, n_skip=2, is_subsample=False, subsample=None, subsample_type):
     '''
     [1] Building block of layers for residual learning.
         Code based on https://github.com/ndronen/modeling/blob/master/modeling/residual.py
@@ -65,72 +65,52 @@ def building_residual_block(name_prefix, input_shape, n_feature_maps, kernel_siz
     prev_output = input_name
     
     # ***** SHORT_CUT_PART ***** 
-    shortcut_output = '%s_identity'%name_prefix
+    shortcut_output = '%s_identity' % name_prefix
     block.add_node(Identity(input_shape=input_shape), name=shortcut_output, 
-                                input=prev_output)
+                                input=prev_output)    
     
-    if is_subsample: # probably subsample first? not sure yet.
-        this_node_name = '%s_shortcut_AP' % name_prefix 
-        block.add_node(AveragePooling2D(pool_size=subsample),
-                        name=this_node_name,
-                        input=shortcut_output)
+    if is_subsample: # subsample (+ channel expansion if needed)
+        this_node_name = '%s_shortcut_conv' % name_prefix 
+        layer = Convolution2D(n_feature_maps, kernel_sizes[0], kernel_sizes[1], 
+                                    subsample=subsample,
+                                    border_mode='valid')
+        block.add_node(layer, name=this_node_name, input=shortcut_output)
         shortcut_output = this_node_name
-    
-    if is_expand_channels:
-        this_node_name = '%s_shortcut_conv' % name_prefix
-        block.add_node(Convolution2D(n_feature_maps, 1, 1,
-                                    border_mode='same'), # is input_shape necessary in this case?
-                        name=this_node_name,
-                        input=shortcut_output)
-        shortcut_output = this_node_name
+    else: # channel expansion only (e.g. the very first layer of the whole networks)
+        if is_expand_channels:
+            this_node_name = '%s_shortcut_conv' % name_prefix 
+            layer = Convolution2D(n_feature_maps, 1, 1, border_mode='same')
+            block.add_node(layer, name=this_node_name, input=shortcut_output)
+            shortcut_output = this_node_name
+        else:
+            # if no subsample and no channel expension, there's nothing to add on the shortcut.
+            pass
     
     # ***** CONVOLUTION_PART ***** 
     for i in range(n_skip):
         # [BN]
-        if i == 0:
-            # taking care of subsampling
-            # as 'valid' 3x3 conv reduces the size but valid1x1 (for shortcut) doesn't
-            # zero should be padded here.
-            # print '      - Zero padding on the feature map to subsample.'
-            #    zero pad
-            # layer_name = '%s_pad_%d' % (name_prefix, i)
-            # block.add_node(ZeroPadding2D(padding=(1,1),
-            #                           input_shape=input_shape), 
-            #               name=layer_name,
-            #               input=prev_output)
-            # prev_output = layer_name
-            #     conv
-            layer_name = '%s_BN_%d' % (name_prefix, i)
-            block.add_node(BatchNormalization(axis=1, input_shape=input_shape), 
-                            name=layer_name, 
-                            input=prev_output)
-            prev_output = layer_name
-        else:
-            layer_name = '%s_BN_%d' % (name_prefix, i)
-            block.add_node(BatchNormalization(axis=1), name=layer_name, input=prev_output)
-            prev_output = layer_name    
+        layer_name = '%s_BN_%d' % (name_prefix, i)
+        block.add_node(BatchNormalization(axis=1), name=layer_name, input=prev_output)
+        prev_output = layer_name    
         # [ReLU]
         layer_name = '%s_relu_%d' % (name_prefix, i)
         block.add_node(Activation('relu'), name=layer_name, input=prev_output)
         prev_output = layer_name
         # [Conv]
         layer_name = '%s_conv_%d' % (name_prefix, i)
-        layer = Convolution2D(n_feature_maps, kernel_row, kernel_col, border_mode='same')   
+        if i==0 and is_subsample: # [Subsample at layer 0 if needed]
+            layer = Convolution2D(n_feature_maps, kernel_row, kernel_col,
+                                    subsample=subsample,
+                                    border_mode='valid')  
+        else:        
+            layer = Convolution2D(n_feature_maps, kernel_row, kernel_col, border_mode='same')   
         block.add_node(layer, name=layer_name, input=prev_output)
         prev_output = layer_name
-        # [Subsample]    
-        if i==0 and is_subsample:
-            #     MP
-            layer_name = '%s_MP_%d' % (name_prefix, i)
-            block.add_node(MaxPooling2D(pool_size=subsample),
-                            name=layer_name,
-                            input=prev_output)
-            prev_output = layer_name
 
     # output
     layer_name = '%s_output' % name_prefix
     block.add_output(name=layer_name, 
                     inputs=[prev_output, shortcut_output],
                     merge_mode='sum')
-    
+
     return block

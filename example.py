@@ -42,14 +42,13 @@ img_rows, img_cols = 28, 28
 
 def design_for_residual_blocks():
     ''''''
-    model = keras.layers.containers.Sequential() # it's a CONTAINER, not MODEL. It should be replaced with Sequential
+    model = keras.layers.containers.Sequential() # it's a CONTAINER, not MODEL
     # set numbers
     num_big_blocks = 3
     image_patch_sizes = [[3,3]]*num_big_blocks
-    # vgg_modi_weight, pool_sizes = get_residual_weights(num_big_blocks=num_big_blocks)
     pool_sizes = [(2,2)]*num_big_blocks
-    n_features = [128, 256, 512]
-    n_features_next = [256, 512, 512]
+    n_features = [128, 256, 512, 512]
+    n_features_next = [256, 512, 512, 512]
     height_input = 32
     width_input = 32
     num_channel_input = 1
@@ -97,7 +96,8 @@ def design_for_residual_blocks():
         width_input  = int(width_input/pool_sizes[conv_idx][1])
         num_channel_input = n_feat_next
 
-    # Add average pooling at the end: (4,4) --> (1,1)
+    # Add average pooling at the end:
+    print 'Average pooling, from (%d,%d) to (1,1)' % (height_input, width_input)
     model.add(AveragePooling2D(pool_size=(height_input, width_input)))
 
     this_node_name = 'residual_block_output'
