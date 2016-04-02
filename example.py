@@ -122,7 +122,7 @@ def design_residual_model():
     residual_output_shape = residual_blocks.output_shape
     classifier_input_shape = residual_output_shape[1:]
     # [Classifier]
-    model.add(Flatten())
+    model.add(Flatten(input_shape=classifier_input_shape))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
     # [END]
