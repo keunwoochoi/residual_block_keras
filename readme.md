@@ -23,7 +23,19 @@ I had this result:
 ```
 Train on 60000 samples, validate on 10000 samples
 Epoch 1/12
-60000/60000 [==============================] - 1442s - loss: 0.1520 - acc: 0.9525 - val_loss: 0.0826 - val_acc: 0.9728
+60000/60000 [==========] - 1442s - loss: 0.1520 - acc: 0.9525 - val_loss: 0.0826 - val_acc: 0.9728
+Epoch 2/20
+60000/60000 [==========] - 1350s - loss: 0.0489 - acc: 0.9850 - val_loss: 0.0380 - val_acc: 0.9882
+Epoch 3/20
+60000/60000 [==========] - 1330s - loss: 0.0377 - acc: 0.9881 - val_loss: 0.1047 - val_acc: 0.9681
+Epoch 4/20
+60000/60000 [==========] - 1315s - loss: 0.0320 - acc: 0.9897 - val_loss: 0.0483 - val_acc: 0.9839
+Epoch 5/20
+60000/60000 [==========] - 1352s - loss: 0.0279 - acc: 0.9912 - val_loss: 0.0750 - val_acc: 0.9739
+Epoch 6/20
+60000/60000 [==========] - 1329s - loss: 0.0263 - acc: 0.9914 - val_loss: 0.0445 - val_acc: 0.9864
+Epoch 7/20
+60000/60000 [==========] - 1324s - loss: 0.0212 - acc: 0.9934 - val_loss: 0.0316 - val_acc: 0.9899
 ```
 
 However there are some changes on the block, which you can easily detect. Such as...
