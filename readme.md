@@ -71,3 +71,22 @@ Epoch 20/20
 Test score: 0.0199598483238
 Test accuracy: 0.9949
 ```
+
+### CIFAR-10
+Basically it's the same as MNIST except there's no need to pad zeros.
+This is the result I had.
+```
+Epoch 10/20
+50000/50000 [==============================] - 993s - loss: 0.2611 - acc: 0.9081 - val_loss: 0.5176 - val_acc: 0.8380
+Epoch 12/20
+50000/50000 [==============================] - 994s - loss: 0.1733 - acc: 0.9400 - val_loss: 0.5968 - val_acc: 0.8303
+Epoch 14/20
+50000/50000 [==============================] - 991s - loss: 0.1186 - acc: 0.9587 - val_loss: 0.6104 - val_acc: 0.8360
+Epoch 16/20
+50000/50000 [==============================] - 978s - loss: 0.0922 - acc: 0.9679 - val_loss: 0.6425 - val_acc: 0.8405
+Epoch 18/20
+50000/50000 [==============================] - 977s - loss: 0.0714 - acc: 0.9749 - val_loss: 0.6241 - val_acc: 0.8510
+Epoch 20/20
+50000/50000 [==============================] - 990s - loss: 0.0635 - acc: 0.9775 - val_loss: 0.6780 - val_acc: 0.8474
+```
+(The speed-up seems to be due to the cudnn update.)
