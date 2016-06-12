@@ -1,6 +1,7 @@
 # Residual block in Keras
 
 ### NOTICE
+* 12 Jun 2016 - Added option to choose from CIFAR-10 and MNIST.
 * 14 Apr 2016 - `Example.py` is working well.
 * 14 Apr 2016 - Updated regarding Keras1.0
 
