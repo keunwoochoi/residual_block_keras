@@ -69,7 +69,7 @@ def building_residual_block(input_shape, n_feature_maps, kernel_sizes=None, n_sk
     # ***** CONVOLUTION_PATH ***** 
     conv_y = x
     for i in range(n_skip):
-        conv_y = BatchNormalization(axis=1)(conv_y)        
+        conv_y = BatchNormalization(axis=1, mode=2)(conv_y)        
         conv_y = Activation('relu')(conv_y)
         if i==0 and is_subsample: # [Subsample at layer 0 if needed]
             conv_y = Convolution2D(n_feature_maps, kernel_row, kernel_col,

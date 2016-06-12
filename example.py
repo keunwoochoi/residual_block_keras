@@ -28,7 +28,7 @@ np.random.seed(1337)  # for reproducibility
 
 import keras
 
-from keras.datasets import mnist
+from keras.datasets import mnist, cifar10
 from keras.models import Sequential, Graph
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import ZeroPadding2D, AveragePooling2D, Convolution2D
@@ -39,10 +39,9 @@ from keras.layers.normalization import BatchNormalization
 import residual_blocks
 
 
-batch_size = 32
+batch_size = 64
 nb_classes = 10
-nb_epoch = 12
-img_rows, img_cols = 28, 28
+nb_epoch = 20
 
 def compute_padding_length(length_before, stride, length_conv):
     ''' Assumption: you want the subsampled result has a length of floor(original_length/stride).
@@ -110,14 +109,19 @@ def design_for_residual_blocks(num_channel_input=1):
 
     return model
 
-def get_residual_model():
-    model = keras.models.Sequential() # 
-    model.add(ZeroPadding2D((2,2), input_shape=(1, img_rows, img_cols))) # resize (28,28)-->(32,32)
-    # the first conv 
-    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+def get_residual_model(is_mnist=True, img_channels=1, img_rows=28, img_cols=28):
+    model = keras.models.Sequential()
+    first_layer_channel = 128
+    if is_mnist: # size to be changed to 32,32
+        model.add(ZeroPadding2D((2,2), input_shape=(img_channels, img_rows, img_cols))) # resize (28,28)-->(32,32)
+        # the first conv 
+        model.add(Convolution2D(first_layer_channel, 3, 3, border_mode='same'))
+    else:
+        model.add(Convolution2D(first_layer_channel, 3, 3, border_mode='same', input_shape=(img_channels, img_rows, img_cols)))
+
     model.add(Activation('relu'))
     # [residual-based Conv layers]
-    residual_blocks = design_for_residual_blocks(num_channel_input=128)
+    residual_blocks = design_for_residual_blocks(num_channel_input=first_layer_channel)
     model.add(residual_blocks)
     model.add(BatchNormalization(axis=1))
     model.add(Activation('relu'))
@@ -130,10 +134,21 @@ def get_residual_model():
 
 if __name__ =='__main__':
     
-    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    is_mnist = False
+    is_cifar10 = not is_mnist
+    if is_mnist:
+        (X_train, y_train), (X_test, y_test) = mnist.load_data()
+        img_rows, img_cols = 28, 28
+        img_channels = 1
+        print(' == MNIST ==')
+    else:
+        (X_train, y_train), (X_test, y_test) = cifar10.load_data()
+        img_rows, img_cols = 32, 32
+        img_channels = 3
+        print(' == CIFAR10 ==')
 
-    X_train = X_train.reshape(X_train.shape[0], 1, img_rows, img_cols)
-    X_test = X_test.reshape(X_test.shape[0], 1, img_rows, img_cols)
+    X_train = X_train.reshape(X_train.shape[0], img_channels, img_rows, img_cols)
+    X_test = X_test.reshape(X_test.shape[0], img_channels, img_rows, img_cols)
     X_train = X_train.astype('float32')
     X_test = X_test.astype('float32')
     # X_train /= 255
@@ -146,7 +161,7 @@ if __name__ =='__main__':
     # convert class vectors to binary class matrices
     Y_train = np_utils.to_categorical(y_train, nb_classes)
     Y_test = np_utils.to_categorical(y_test, nb_classes)
-    model = get_residual_model()
+    model = get_residual_model(is_mnist=is_mnist, img_channels=img_channels, img_rows=img_rows, img_cols=img_cols)
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
