@@ -21,13 +21,17 @@ def building_residual_block(input_shape, n_feature_maps, kernel_sizes=None, n_sk
         Code based on https://github.com/ndronen/modeling/blob/master/modeling/residual.py
         , but modification of (perhaps) incorrect relu(f)+x thing and it's for conv layer
 
-    [2] MaxPooling is used instead of strided convolution to make it easier 
-        to set size(output of short-cut) == size(output of conv-layers).
-        If you want to remove MaxPooling,
-           i) change (border_mode in Convolution2D in shortcut), 'same'-->'valid'
-           ii) uncomment ZeroPadding2D in conv layers.
-               (Then the following Conv2D is not the first layer of this container anymore,
-                so you can remove the input_shape in the line 101, the line with comment #'OPTION' )
+    [2] ----This comment used to be valid. Now it is not, but I failed to track since when.----
+        ----Now the comment below is incorrect, I am using strided convolution here.----
+        ----invalid comment------------------------------------------------------------------------------
+        | MaxPooling is used instead of strided convolution to make it easier                           | 
+        | to set size(output of short-cut) == size(output of conv-layers).                              | 
+        | If you want to remove MaxPooling,                                                             | 
+        |    i) change (border_mode in Convolution2D in shortcut), 'same'-->'valid'                     | 
+        |    ii) uncomment ZeroPadding2D in conv layers.                                                | 
+        |        (Then the following Conv2D is not the first layer of this container anymore,           | 
+        |         so you can remove the input_shape in the line 101, the line with comment #'OPTION' )  | 
+        -------------------------------------------------------------------------------------------------
 
     [3] It can be used for both cases whether it subsamples or not.
 
